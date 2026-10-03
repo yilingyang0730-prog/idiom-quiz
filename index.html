@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>成語測驗卷</title>
+<style>
+:root{--bg:#faf8f3;--card:#fff;--ink:#222;--muted:#666;--line:#e3ddd0;--accent:#8a3b12;--ok:#1f7a3a;--okbg:#e8f5ec;--bad:#b3261e;--badbg:#fcebea}
+@media (prefers-color-scheme:dark){:root{--bg:#1b1a17;--card:#25231f;--ink:#eee;--muted:#aaa;--line:#3a372f;--accent:#e0915f;--ok:#6fd08c;--okbg:#1f3326;--bad:#ff8a80;--badbg:#3a2220}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Serif TC","PingFang TC","Microsoft JhengHei",serif;line-height:1.7}
+main{max-width:760px;margin:0 auto;padding:24px 16px 80px}
+h1{text-align:center;margin:8px 0 4px;letter-spacing:.2em;color:var(--accent)}
+.sub{text-align:center;color:var(--muted);margin:0 0 20px}
+.info{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:12px}
+.info label{display:flex;flex-direction:column;font-size:.9rem;color:var(--muted)}
+.info input{font:inherit;padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink)}
+.note{background:var(--card);border-left:4px solid var(--accent);padding:10px 14px;border-radius:6px;margin-bottom:20px;font-size:.95rem}
+h2{font-size:1.15rem;border-bottom:2px solid var(--accent);padding-bottom:4px;margin-top:32px}
+.q{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin:12px 0}
+.q.ok{border-color:var(--ok);background:var(--okbg)}
+.q.bad{border-color:var(--bad);background:var(--badbg)}
+.stem{font-weight:600;margin-bottom:6px}
+.stem em{font-style:normal;color:var(--bad)}
+.opts{display:grid;gap:4px}
+.opts.grid{grid-template-columns:repeat(auto-fit,minmax(140px,1fr))}
+.opts label{display:flex;gap:8px;align-items:flex-start;padding:4px 6px;border-radius:6px;cursor:pointer}
+.opts label:hover{background:var(--bg)}
+.opts input{margin-top:.45em}
+.opts label.correct{outline:2px solid var(--ok)}
+.exp{display:none;margin-top:8px;font-size:.92rem;color:var(--muted)}
+.done .exp{display:block}
+.bar{position:sticky;bottom:0;background:var(--bg);padding:12px 0;display:flex;gap:10px;justify-content:center;border-top:1px solid var(--line);margin-top:24px}
+button{font:inherit;padding:8px 22px;border-radius:8px;border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer}
+button.ghost{background:transparent;color:var(--accent)}
+#score{text-align:center;font-size:1.4rem;font-weight:700;color:var(--accent);margin-top:16px}
+@media print{.bar,#score{display:none}body{background:#fff}.q{break-inside:avoid;border-color:#ccc}}
+</style>
+</head>
+<body>
+<main>
+<h1>成語測驗卷</h1>
+<p class="sub">共 30 題・滿分 100 分</p>
+<div class="info">
+<label>班級<input></label><label>座號<input></label><label>姓名<input></label>
+</div>
+<div class="note">全部為單選題。第 1–20 題每題 3 分，第 21–30 題每題 4 分。第 4、7、9 題請選出用法<strong>「錯誤」</strong>的選項。作答完畢按「交卷」即可看到分數和解析。</div>
+<div id="quiz"></div>
+<div id="score"></div>
+<div class="bar"><button id="submit">交卷</button><button class="ghost" id="reset">重新作答</button><button class="ghost" onclick="print()">列印</button></div>
+</main>
+<script>
+const sections=[
+{title:"一、成語用法判斷（第 1–10 題）",grid:false,qs:[
+["下列哪一個選項的成語用法正確？",["他出手闊綽，花錢總是一毛不拔。","他們倆一見如故，從此再也不往來。","他做事一絲不苟，報告中連一個錯字都找不到。","這部小說情節平淡無奇，可說是一波三折。"],2,"一毛不拔形容吝嗇，與「出手闊綽」矛盾；一見如故指初見就像老朋友；一波三折指起伏曲折，與「平淡」矛盾。"],
+["下列哪一個選項的成語用法正確？",["這場比賽我方輕敵大意，結果一敗塗地。","他讀書一暴十寒，持之以恆，終於考上理想學校。","經過十年苦練，他的成功可說是一蹴而就。","爺爺雖然年事已高，身體仍然一命嗚呼。"],0,"一暴十寒指沒有恆心；一蹴而就指輕易成功，與「十年苦練」矛盾；一命嗚呼指死亡。"],
+["下列哪一個選項的成語用法正確？",["這間雜貨店雖小，日常用品卻一應俱全。","他剛到新公司，大家對他一視同仁，處處排擠他。","他對同學的批評一笑置之，氣得整晚睡不著。","他的成績一落千丈，從第十名進步到第一名。"],0,"一視同仁指平等對待；一笑置之指不放在心上；一落千丈指急劇下降。"],
+["下列哪一個選項的成語用法<em>「錯誤」</em>？",["他們兩人一見如故，聊得十分愉快。","這趟旅行既放鬆心情又增廣見聞，真是一箭雙鵰。","他答應的事一定做到，真可說是一諾千金。","這本書內容枯燥乏味，堪稱一字千金。"],3,"一字千金形容文辭精妙、價值很高，不可形容枯燥的書。"],
+["下列哪一個選項的成語用法正確？",["學習如果一暴十寒，就很難有好成績。","老闆一手遮天，公開所有帳目，讓大家看得清清楚楚。","他為人一介不取，常把公司的文具帶回家。","這件事一言難盡，我用一句話就說完了。"],0,"一手遮天指隱瞞事實；一介不取形容清廉；一言難盡指事情複雜、說不完。"],
+["下列哪一個選項的成語用法正確？",["他的成績每況愈下，可說是一步登天。","這間教室一塵不染，地上到處是紙屑。","他平日一毛不拔，這次卻一擲千金捐款給災民，令人意外。","弟弟對這道題目一竅不通，一下子就解出來了。"],2,"一步登天指一下子達到高境界；一塵不染指非常乾淨；一竅不通指完全不懂。"],
+["下列哪一個選項的成語用法<em>「錯誤」</em>？",["他和女友分隔兩地，常有一日三秋之感。","這篇文章一氣呵成，讀來十分流暢。","一葉知秋，從這件小事就能看出公司的隱憂。","他在演講比賽中表現平平，一鳴驚人地拿到最後一名。"],3,"一鳴驚人指平時默默無聞、突然有驚人的好表現，不可用於「最後一名」。"],
+["下列哪一個選項的成語用法正確？",["老師教學嚴謹，學生都學得一知半解。","他一針見血地指出問題的關鍵，讓大家恍然大悟。","台下聽眾七嘴八舌，安安靜靜地聽講。","這場會議人山人海，只來了三個人。"],1,"一知半解指了解不透徹；七嘴八舌指人多話雜；人山人海形容人很多。"],
+["下列哪一個選項的成語用法<em>「錯誤」</em>？",["媽媽突然昏倒，全家人七手八腳地把她送到醫院。","聽說考試延期，他就把緊張的心情拋到九霄雲外。","消防員冒著九死一生的危險，救出受困的民眾。","這點小錢對富翁來說，只是一毛不拔而已。"],3,"應用「九牛一毛」（極多數中的極少數）；一毛不拔是形容吝嗇。"],
+["下列哪一個選項的成語用法正確？",["他平時做事沒有恆心，難怪到現在還一事無成。","他做人很有主見，總是人云亦云。","這個人表面和善，內心也很善良，真是人面獸心。","這所學校人才濟濟，卻找不到一個能參賽的學生。"],0,"人云亦云指沒有主見；人面獸心指外表和善、內心險惡；人才濟濟形容人才很多。"]
+]},
+{title:"二、成語填空（第 11–20 題）",grid:true,qs:[
+["他答應過的事一定做到，從不食言，真可說是＿＿＿＿。",["一言難盡","一知半解","一落千丈","一諾千金"],3,"一諾千金：說話守信用，答應的事一定做到。"],
+["這場比賽我們輕敵大意，結果輸得＿＿＿＿。",["一鳴驚人","一敗塗地","一視同仁","一塵不染"],1,"一敗塗地：徹底失敗。"],
+["學習不能＿＿＿＿，要持之以恆才會有好成績。",["一針見血","一擲千金","一暴十寒","一見如故"],2,"一暴十寒：做事沒有恆心、時常中斷，與「持之以恆」相對。"],
+["站在山頂往下看，整座城市的景色＿＿＿＿。",["一覽無遺","一竅不通","一事無成","一毛不拔"],0,"一覽無遺：一眼望去就看得清清楚楚。"],
+["他平時默默無聞，這次比賽卻＿＿＿＿，奪得冠軍。",["一蹶不振","一言難盡","一介不取","一鳴驚人"],3,"一鳴驚人：平時默默無聞，突然有驚人的表現。"],
+["這筆錢對富翁來說，不過是＿＿＿＿而已。",["一毛不拔","九牛一毛","一擲千金","一貧如洗"],1,"九牛一毛：極多數中的極少數。"],
+["他一眼就看出問題所在，＿＿＿＿地說出了關鍵。",["一丘之貉","一塌糊塗","一針見血","一視同仁"],2,"一針見血：說話能抓住重點，見解透徹。"],
+["那幾個人整天聚在一起欺負同學，全是＿＿＿＿，沒一個好人。",["一丘之貉","一團和氣","人才濟濟","一應俱全"],0,"一丘之貉：比喻同類的壞人，帶貶義。"],
+["他們第一次見面就聊得非常投機，真是＿＿＿＿。",["一言九鼎","一落千丈","一見如故","一敗塗地"],2,"一見如故：初次見面就像老朋友。"],
+["下課鐘一響，同學們就＿＿＿＿地討論起週末的計畫。",["一絲不苟","一蹶不振","九死一生","七嘴八舌"],3,"七嘴八舌：人多話雜，紛紛討論。"]
+]},
+{title:"三、成語填空進階（第 21–30 題）",grid:true,qs:[
+["他把事情的經過＿＿＿＿地告訴老師，沒有一點隱瞞。",["一籌莫展","一五一十","一望無際","一團和氣"],1,"一五一十：把事情從頭到尾詳細說出，毫無遺漏。"],
+["面對這個難題，大家都想不出辦法，只能＿＿＿＿。",["一馬當先","一勞永逸","一籌莫展","一臂之力"],2,"一籌莫展：一點辦法也沒有。"],
+["警方展開大規模行動，將這個詐騙集團＿＿＿＿。",["一網打盡","一貧如洗","一頭霧水","一葉知秋"],0,"一網打盡：比喻全部捕捉或消滅。"],
+["站在海邊遠眺，只見大海＿＿＿＿，令人心曠神怡。",["七零八落","一望無際","人仰馬翻","一成不變"],1,"一望無際：看不到邊際，形容廣大遼闊。"],
+["老師講得太快，我聽得＿＿＿＿，完全不懂。",["一頭霧水","一目瞭然","一針見血","一揮而就"],0,"一頭霧水：比喻摸不著頭緒、不明白。"],
+["他沉迷賭博，把家產輸光，變得＿＿＿＿。",["一諾千金","人才濟濟","一馬當先","一貧如洗"],3,"一貧如洗：形容非常窮困，一無所有。"],
+["等待放榜的時候，他心裡＿＿＿＿，十分不安。",["七上八下","七步成詩","一團和氣","二八年華"],0,"七上八下：形容心思浮動，不得安定。"],
+["遇到危險時，隊長總是＿＿＿＿，衝在最前面。",["一落千丈","人云亦云","一馬當先","一筆勾消"],2,"一馬當先：比喻領頭帶頭，衝在前面。"],
+["冰凍三尺非一日之寒，他的成功並非＿＿＿＿就能達成。",["一朝一夕","一字千金","一言九鼎","一網打盡"],0,"一朝一夕：形容時間很短。"],
+["弟弟把房間弄得亂糟糟的，玩具散落得＿＿＿＿。",["一塵不染","七零八落","一應俱全","一絲不苟"],1,"七零八落：形容散亂而沒有條理。"]
+]}];
+const L="ABCD",quiz=document.getElementById("quiz");let n=0;const all=[];
+sections.forEach(s=>{const h=document.createElement("h2");h.textContent=s.title;quiz.appendChild(h);
+s.qs.forEach(([stem,opts,ans,exp])=>{n++;const pts=n<=20?3:4;const d=document.createElement("div");d.className="q";
+d.innerHTML=`<div class="stem">${n}. ${stem}</div><div class="opts${s.grid?" grid":""}">${opts.map((o,i)=>`<label><input type="radio" name="q${n}" value="${i}"><span>(${L[i]}) ${o}</span></label>`).join("")}</div><div class="exp">正確答案：(${L[ans]})　${exp}</div>`;
+quiz.appendChild(d);all.push({d,n,ans,pts});});});
+document.getElementById("submit").onclick=()=>{let score=0,blank=0;all.forEach(q=>{const c=document.querySelector(`input[name=q${q.n}]:checked`);if(!c)blank++;
+const ok=c&&+c.value===q.ans;if(ok)score+=q.pts;q.d.classList.remove("ok","bad");q.d.classList.add(ok?"ok":"bad","done");
+q.d.querySelectorAll("label")[q.ans].classList.add("correct");});
+document.getElementById("score").textContent=`得分：${score} / 100`+(blank?`（未作答 ${blank} 題）`:"");document.getElementById("score").scrollIntoView({behavior:"smooth",block:"center"});};
+document.getElementById("reset").onclick=()=>{all.forEach(q=>{q.d.classList.remove("ok","bad","done");q.d.querySelectorAll("input").forEach(i=>i.checked=false);q.d.querySelectorAll("label").forEach(l=>l.classList.remove("correct"));});document.getElementById("score").textContent="";scrollTo({top:0,behavior:"smooth"});};
+</script>
+</body>
+</html>
